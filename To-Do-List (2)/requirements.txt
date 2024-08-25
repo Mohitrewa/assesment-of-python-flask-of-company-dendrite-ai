@@ -1,0 +1,5 @@
+Requirements
+
+install these packages
+
+pip install flask, ariadne

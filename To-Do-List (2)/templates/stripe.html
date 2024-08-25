@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Payment</title>
+    <style>
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #card-element {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        #submit {
+            background-color: #6772e5;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #submit:hover {
+            background-color: #5469d4;
+        }
+
+        #card-errors {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <div class="container">
+        <form id="payment-form">
+            <div id="card-element"><!-- Stripe Element will be inserted here --></div>
+            <button id="submit">Pay</button>
+            <div id="card-errors" role="alert"></div>
+        </form>
+    </div>
+    <script>
+
+         async function fetchData() {
+            const response = await fetch('/graphql', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: `
+                        query {
+                            hello
+                        }
+                    `,
+                }),
+            });
+            const result = await response.json();
+            document.getElementById('data').innerText = result.data.hello;
+        }
+
+        fetchData();
+
+        const stripe = Stripe('your-publishable-key-here'); // Replace with your own publishable key
+        const elements = stripe.elements();
+        const card = elements.create('card');
+        card.mount('#card-element');
+
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const {token, error} = await stripe.createToken(card);
+
+            if (error) {
+                // Display error.message in #card-errors
+                document.getElementById('card-errors').textContent = error.message;
+            } else {
+                // Send the token to your server
+                console.log('Token:', token);
+                // You can now send the token to your server for processing the payment
+            }
+        });
+    </script>
+</body>
+</html>
